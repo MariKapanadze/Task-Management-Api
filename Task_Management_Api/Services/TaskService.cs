@@ -29,7 +29,8 @@ namespace Task_Management_Api.Services
 
         public TaskResponse Create(CreateTaskRequest request)
         {
-            ValidateTitle(request.Title);
+            ValidateAssignee(request.Assignee);
+            ValidateDueDate(request.DueDate);
 
             var task = new TaskItem
             {
@@ -55,6 +56,8 @@ namespace Task_Management_Api.Services
             }
 
             ValidateTitle(request.Title);
+            ValidateAssignee(request.Assignee);
+            ValidateDueDate(request.DueDate);
             ValidateStatus(request.Status);
 
             task.Title = request.Title.Trim();
@@ -102,6 +105,7 @@ namespace Task_Management_Api.Services
             return true;
         }
 
+
         private static void ValidateTitle(string title)
         {
             if (string.IsNullOrWhiteSpace(title) ||
@@ -111,6 +115,26 @@ namespace Task_Management_Api.Services
                     "Title is required and must be at least 3 characters long.");
             }
         }
+
+        private static void ValidateAssignee(string assignee)
+        {
+            if (string.IsNullOrWhiteSpace(assignee))
+            {
+                throw new ArgumentException(
+                    "Assignee is required.");
+            }
+        }
+
+        private static void ValidateDueDate(DateTime? dueDate)
+        {
+            if (dueDate.HasValue &&
+                dueDate.Value == DateTime.MinValue)
+            {
+                throw new ArgumentException(
+                    "Due date must be a valid date.");
+            }
+        }
+
 
         private static void ValidateStatus(
             Task_Management_Api.Models.TaskStatus status)

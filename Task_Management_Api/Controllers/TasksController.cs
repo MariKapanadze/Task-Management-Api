@@ -89,7 +89,7 @@ namespace Task_Management_Api.Controllers
                     return NotFound();
                 }
 
-                return NoContent();
+                return Ok(new { message = "Task status updated successfully." });
             }
             catch (ArgumentException ex)
             {
