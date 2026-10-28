@@ -16,9 +16,14 @@ namespace Task_Management_Api.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<TaskResponse>> GetAll()
+        public ActionResult<List<TaskResponse>> GetAll(
+            [FromQuery] Task_Management_Api.Models.TaskStatus? status = null,
+            [FromQuery] string? assignee = null,
+            [FromQuery] string? title = null)
         {
-            return Ok(_taskService.GetAll());
+            var tasks = _taskService.GetAll(status, assignee, title);
+
+            return Ok(tasks);
         }
 
         [HttpGet("{id:int}")]

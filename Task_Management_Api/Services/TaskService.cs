@@ -13,12 +13,38 @@ namespace Task_Management_Api.Services
             _repository = repository;
         }
 
-        public List<TaskResponse> GetAll()
+
+        public List<TaskResponse> GetAll(
+            Task_Management_Api.Models.TaskStatus? status = null,
+            string? assignee = null,
+            string? title = null)
         {
-            return _repository.GetAll()
-                .Select(MapToResponse)
-                .ToList();
+            var tasks = _repository.GetAll().AsEnumerable();
+
+            if (status.HasValue)
+            {
+                tasks = tasks.Where(task => task.Status == status.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(assignee))
+            {
+                tasks = tasks.Where(task =>
+                    task.Assignee.Contains(
+                        assignee.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                tasks = tasks.Where(task =>
+                    task.Title.Contains(
+                        title.Trim(),
+                        StringComparison.OrdinalIgnoreCase));
+            }
+
+            return tasks.Select(MapToResponse).ToList();
         }
+
 
         public TaskResponse? GetById(int id)
         {

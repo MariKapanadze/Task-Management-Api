@@ -5,7 +5,10 @@ namespace Task_Management_Api.Services
 {
     public interface ITaskService
     {
-        List<TaskResponse> GetAll();
+        List<TaskResponse> GetAll(
+            Task_Management_Api.Models.TaskStatus? status = null,
+            string? assignee = null,
+            string? title = null);
 
         TaskResponse? GetById(int id);
 
