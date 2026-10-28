@@ -29,6 +29,7 @@ namespace Task_Management_Api.Services
 
         public TaskResponse Create(CreateTaskRequest request)
         {
+            ValidateTitle(request.Title);
             ValidateAssignee(request.Assignee);
             ValidateDueDate(request.DueDate);
 
