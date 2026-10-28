@@ -313,6 +313,140 @@ namespace Task_Management_Api.Tests
         }
 
 
+        [Fact]
+        public void GetAll_WithStatusFilter_ReturnsOnlyMatchingTasks()
+        {
+            // Arrange
+            var service = new TaskService(new InMemoryTaskRepository());
+
+            service.Create(new Task_Management_Api.DTOs.CreateTaskRequest
+            {
+                Title = "Task one",
+                Assignee = "Alice"
+            });
+
+            var taskTwo = service.Create(
+                new Task_Management_Api.DTOs.CreateTaskRequest
+                {
+                    Title = "Task two",
+                    Assignee = "Bob"
+                });
+
+            service.UpdateStatus(
+                taskTwo.Id,
+                new Task_Management_Api.DTOs.UpdateTaskStatusRequest
+                {
+                    Status = Task_Management_Api.Models.TaskStatus.DONE
+                });
+
+            // Act
+            var result = service.GetAll(
+                status: Task_Management_Api.Models.TaskStatus.DONE);
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal("Task two", result[0].Title);
+        }
+
+        [Fact]
+        public void GetAll_WithAssigneeFilter_IsCaseInsensitive()
+        {
+            // Arrange
+            var service = new TaskService(new InMemoryTaskRepository());
+
+            service.Create(new Task_Management_Api.DTOs.CreateTaskRequest
+            {
+                Title = "Build login page",
+                Assignee = "Alice"
+            });
+
+            service.Create(new Task_Management_Api.DTOs.CreateTaskRequest
+            {
+                Title = "Write tests",
+                Assignee = "Bob"
+            });
+
+            // Act
+            var result = service.GetAll(assignee: "alice");
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal("Alice", result[0].Assignee);
+        }
+
+        [Fact]
+        public void GetAll_WithTitleFilter_ReturnsPartialMatches()
+        {
+            // Arrange
+            var service = new TaskService(new InMemoryTaskRepository());
+
+            service.Create(new Task_Management_Api.DTOs.CreateTaskRequest
+            {
+                Title = "Create login page",
+                Assignee = "Alice"
+            });
+
+            service.Create(new Task_Management_Api.DTOs.CreateTaskRequest
+            {
+                Title = "Write unit tests",
+                Assignee = "Bob"
+            });
+
+            // Act
+            var result = service.GetAll(title: "login");
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal("Create login page", result[0].Title);
+        }
+
+        [Fact]
+        public void GetAll_WithCombinedFilters_AppliesAllFilters()
+        {
+            // Arrange
+            var service = new TaskService(new InMemoryTaskRepository());
+
+            var matchingTask = service.Create(
+                new Task_Management_Api.DTOs.CreateTaskRequest
+                {
+                    Title = "Create login page",
+                    Assignee = "Alice"
+                });
+
+            service.Create(new Task_Management_Api.DTOs.CreateTaskRequest
+            {
+                Title = "Create dashboard",
+                Assignee = "Alice"
+            });
+
+            service.Create(new Task_Management_Api.DTOs.CreateTaskRequest
+            {
+                Title = "Create login page",
+                Assignee = "Bob"
+            });
+
+            service.UpdateStatus(
+                matchingTask.Id,
+                new Task_Management_Api.DTOs.UpdateTaskStatusRequest
+                {
+                    Status = Task_Management_Api.Models.TaskStatus.DONE
+                });
+
+            // Act
+            var result = service.GetAll(
+                status: Task_Management_Api.Models.TaskStatus.DONE,
+                assignee: "alice",
+                title: "login");
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal("Create login page", result[0].Title);
+            Assert.Equal("Alice", result[0].Assignee);
+            Assert.Equal(
+                Task_Management_Api.Models.TaskStatus.DONE,
+                result[0].Status);
+        }
+
 
     }
 }

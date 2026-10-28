@@ -3,6 +3,7 @@ using Task_Management_Api.Services;
 using System.Text.Json.Serialization;
 using Task_Management_Api.Data;
 using Microsoft.EntityFrameworkCore;
+using Task_Management_Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,17 @@ builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+
+    var dbContext = scope.ServiceProvider
+        .GetRequiredService<TaskManagementDbContext>();
+
+    await DbSeeder.SeedAsync(dbContext);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
