@@ -18,9 +18,31 @@ builder.Services.AddControllers()
 
 builder.Services.AddScoped<ITaskRepository, EfTaskRepository>();
 
+
+
+var databaseProvider = builder.Configuration["DatabaseProvider"]
+    ?? "Sqlite";
+
+var connectionString =
+    builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException(
+        "The DefaultConnection connection string is missing.");
+
 builder.Services.AddDbContext<TaskManagementDbContext>(options =>
-    options.UseSqlite(
-        builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (databaseProvider.Equals(
+        "PostgreSql",
+        StringComparison.OrdinalIgnoreCase))
+    {
+        options.UseNpgsql(connectionString);
+    }
+    else
+    {
+        options.UseSqlite(connectionString);
+    }
+});
+
+
 
 builder.Services.AddScoped<ITaskService, TaskService>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
