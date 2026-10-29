@@ -12,4 +12,5 @@ public class PostgreSqlTaskManagementDbContext : DbContext
     }
 
     public DbSet<TaskItem> Tasks { get; set; }
+    public DbSet<AppUser> Users { get; set; } = null!;
 }

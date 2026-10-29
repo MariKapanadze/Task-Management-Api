@@ -4,8 +4,16 @@ using System.Text.Json.Serialization;
 using Task_Management_Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Task_Management_Api.Middleware;
+using Microsoft.AspNetCore.Authentication;
+using Task_Management_Api.Authentication;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services
+    .AddAuthentication("Basic")
+    .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>(
+        "Basic", options => { });
 
 // Add services to the container.
 
@@ -45,9 +53,25 @@ builder.Services.AddDbContext<TaskManagementDbContext>(options =>
 
 
 builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<PasswordService>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Basic", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "basic",
+        In = ParameterLocation.Header,
+        Description = "Enter your username and password."
+    });
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("Basic", document)] = []
+    });
+});
 
 var app = builder.Build();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -72,6 +96,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

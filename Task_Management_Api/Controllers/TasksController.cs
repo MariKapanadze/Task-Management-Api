@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Task_Management_Api.DTOs;
 using Task_Management_Api.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Task_Management_Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class TasksController : ControllerBase
     {
         private readonly ITaskService _taskService;
@@ -102,16 +104,12 @@ namespace Task_Management_Api.Controllers
             }
         }
 
+        [Authorize(Roles = "ADMIN")]
         [HttpDelete("{id:int}")]
         public IActionResult Delete(int id)
         {
             var deleted = _taskService.Delete(id);
-
-            if (!deleted)
-            {
-                return NotFound();
-            }
-
+            if (!deleted) return NotFound();
             return NoContent();
         }
     }
